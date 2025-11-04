@@ -11,10 +11,13 @@ Check out the [complete documentation](https://github.com/p8p-client/p8p/blob/ma
 This project is organized as a monorepo. Each package is also available individually:
 
 - **[p8p/client](https://github.com/p8p-client/client)** - HTTP client for communicating with Kubernetes APIs
+- **[p8p/symfony-bundle](https://github.com/p8p-client/symfony-bundle)** - Symfony bundle for easy integration
 - **[p8p/generator](https://github.com/p8p-client/generator)** - Code generator from OpenAPI specifications
 - **[p8p/sdk](https://github.com/p8p-client/sdk)** - Generated Kubernetes SDK (models and services)
 
-## 🚀 Quick Example
+## 🚀 Quick Examples
+
+### Read pods
 
 ```php
 use P8p\Client\ClientFactory;
@@ -23,8 +26,38 @@ use P8p\Sdk\Api\Core\V1\PodApi;
 $client = ClientFactory::fromUrl('http://127.0.0.1:8001')->getClient();
 
 $podApi = $client->getApi(PodApi::class);
-$pods = $podApi->list(namespace: 'default')->getContent();
+$pods = $podApi->list(namespace: 'default');
 
-dd($pods);
+dd($pods->getContent())
 ```
 
+### Create pod
+
+```php
+use P8p\Client\ClientFactory;
+use P8p\Sdk\Api\Core\V1\PodApi;
+use P8p\Sdk\Schema\Core\V1\Container;
+use P8p\Sdk\Schema\Core\V1\Pod;
+use P8p\Sdk\Schema\Core\V1\PodSpec;
+use P8p\Sdk\Schema\Meta\V1\ObjectMeta;
+
+$client = ClientFactory::fromUrl('http://127.0.0.1:8001')->getClient();
+
+$podApi = $client->getApi(PodApi::class);
+$rs = $podApi->create('default', new Pod(
+    metadata: new ObjectMeta(
+        name: 'test-pod',
+    ),
+    spec: new PodSpec(
+        containers: [
+            new Container(
+                name: 'nginx',
+                image: 'nginx',
+            ),
+        ]
+    )
+));
+
+dd($rs->getContent())
+
+```
